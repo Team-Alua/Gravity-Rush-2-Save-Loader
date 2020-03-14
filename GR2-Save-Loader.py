@@ -2,7 +2,7 @@ import struct
 import json
 from collections import OrderedDict
 
-file_path = "data0000.bin"
+file_path = "data0002.bin"
 show_offset = True
 show_hash = False
 loaded_data = 0
@@ -32,12 +32,16 @@ def unpack(upstream_data_set):
             string_length = int.from_bytes(file.read(4), byteorder='little') - 1
             data_location = type // 0x10
             file.seek(data_location, 0)
-            value = file.read(string_length).decode('UTF8')
+            try:
+                value = file.read(string_length).decode('UTF8')
+            except:
+                value = "ERROR EXTRACTING STRING"
             file.seek(currentCursor + 0x0c, 0)
         elif type == 0x09:  # Float
             value = struct.unpack('f', file.read(4))[0]
         elif type == 0x0C:  # Boolean
-            value = int.from_bytes(file.read(4), byteorder='little') > 0
+            value = int.from_bytes(file.read(1), byteorder='little') > 0
+            file.seek(3, 1)
         else:
             value = file.read(4).hex()
             print("Warring!!! Unknow type!!! %s at %s with value %s" % (hex(type), hex(file.tell()-8), value))
