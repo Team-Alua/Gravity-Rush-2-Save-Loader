@@ -3,17 +3,6 @@ import json
 from collections import OrderedDict
 import sys
 
-if not sys.argv[1]:
-    from tkinter.filedialog import askopenfilename
-    file_path = askopenfilename()
-else:
-    file_path = sys.argv[1]
-
-show_offset = True
-show_hash = False
-show_output = False
-loaded_data = 0
-
 def unpack(upstream_data_set):
     global loaded_data
     loaded_data = loaded_data + 1
@@ -69,24 +58,43 @@ def unpack(upstream_data_set):
         print(value)
     upstream_data_set[variable_name] = value
 
-# TODO: move to `main()`
-file = open(file_path, mode='rb')
-data = file.read()
+def main():
+    global show_offset
+    global show_hash
+    global show_output
+    global file
+    global loaded_data
+    if not sys.argv[1]:
+        from tkinter.filedialog import askopenfilename
+        file_path = askopenfilename()
+    else:
+        file_path = sys.argv[1]
 
-data_set = OrderedDict()
-if len(data) > 0x40 and data[0:4] == b'ggdL':
-    file.seek(0x0c, 0)
-    numOfData = int.from_bytes(file.read(4), byteorder='little')
-    while loaded_data < numOfData:
-        unpack(data_set)
-    if show_output:
-        print()
-        print(data_set)
-        print()
-    print("Complete with %i/%i data" % (loaded_data, numOfData))
-    with open("%s.json" % (file_path.split('.')[0]), 'w', encoding='utf-8') as json_file:
-        json.dump(data_set, json_file, indent=4, ensure_ascii=False)
-else:
-    print("File Incorrect")
+    show_offset = True
+    show_hash = False
+    show_output = False
+    loaded_data = 0
 
-input("Press Enter to quit")
+    file = open(file_path, mode='rb')
+    data = file.read()
+
+    data_set = OrderedDict()
+    if len(data) > 0x40 and data[0:4] == b'ggdL':
+        file.seek(0x0c, 0)
+        numOfData = int.from_bytes(file.read(4), byteorder='little')
+        while loaded_data < numOfData:
+            unpack(data_set)
+        if show_output:
+            print()
+            print(data_set)
+            print()
+        print("Complete with %i/%i data" % (loaded_data, numOfData))
+        with open("%s.json" % (file_path.split('.')[0]), 'w', encoding='utf-8') as json_file:
+            json.dump(data_set, json_file, indent=4, ensure_ascii=False)
+    else:
+        print("File Incorrect")
+
+    input("Press Enter to quit")
+
+if __name__ == '__main__':
+    main()
